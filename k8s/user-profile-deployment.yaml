@@ -1,0 +1,38 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: user-profile
+spec:
+  selector:
+    app: user-profile
+  ports:
+  - protocol: TCP
+    port: 8092
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-profile
+spec:
+  selector:
+      matchLabels:
+        app: user-profile
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: user-profile
+    spec:
+      containers:
+        - name: user-profile
+          image: 571335938804.dkr.ecr.us-west-2.amazonaws.com/remi-user-profile:latest
+          ports:
+            - containerPort: 8092
+          env:
+            - name: JAVA_OPTS
+              value: "-XX:MaxMetaspaceSize=128m -Xss1m -Xms128m -Xmx512m"
+            - name: ENV
+              value: "uat"
+            - name: CONFIG_SERVER
+              value: "http://centralized-configuration:8096/centralized-configuration"

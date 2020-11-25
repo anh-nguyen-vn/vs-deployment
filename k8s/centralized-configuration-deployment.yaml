@@ -1,0 +1,37 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: centralized-configuration
+spec:
+  selector:
+    app: centralized-configuration
+  ports:
+  - protocol: TCP
+    port: 8096
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: centralized-configuration
+spec:
+  selector:
+      matchLabels:
+        app: centralized-configuration
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: centralized-configuration
+    spec:
+      containers:
+        - name: centralized-configuration
+          image: 571335938804.dkr.ecr.us-west-2.amazonaws.com/remi-centralized-configuration:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8096
+          env:
+            - name: JAVA_OPTS
+              value: "-XX:MaxMetaspaceSize=128m -Xss1m -Xms128m -Xmx512m"
+            - name: ENV
+              value: "uat"

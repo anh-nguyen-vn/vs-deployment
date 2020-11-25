@@ -1,0 +1,57 @@
+version: '3'
+services:
+    postgres:
+        container_name: assessment_postgres
+        image: postgres:11
+        ports:
+          - '5432:5432'
+        environment:
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_USER=postgres
+            - POSTGRES_MULTIPLE_DATABASES=remi_api_gateway,remi_user
+        volumes:
+            - assessment_postgres_data=/var/lib/postgresql/data
+            - ./db_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
+    centralized-configuration:
+        container_name: assessment_centralized-configuration
+        build:
+          dockerfile: Dockerfile
+          context: ../../centralized-configuration
+        ports:
+            - '9096:8096'
+        environment:
+            - ENV=local
+        restart: always
+    api-gateway:
+        container_name: assessment_api-gateway
+        build:
+            dockerfile: Dockerfile
+            context: ../../api-gateway
+        ports:
+            - '9090:8090'
+        environment:
+            - ENV=local
+            - CONFIG_SERVER=http://centralized-configuration:8096/centralized-configuration
+        restart: always
+    user-profile:
+        container_name: assessment_user-profile
+        build:
+            dockerfile: Dockerfile
+            context: ../../user-profile
+        ports:
+            - '9092:8092'
+        environment:
+            - ENV=local
+            - CONFIG_SERVER=http://centralized-configuration:8096/centralized-configuration
+        restart: always
+    video-sharing-fe:
+        container_name: assessment_video-sharing-fe
+        build:
+            dockerfile: Dockerfile
+            context: ../../video-sharing-fe
+        volumes:
+            - '.:/app'
+            - '/app/node_modules'
+        ports:
+            - '9080:80'
+        restart: always

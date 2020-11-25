@@ -1,0 +1,39 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: api-gateway
+spec:
+  selector:
+    app: api-gateway
+  ports:
+  - protocol: TCP
+    port: 8090
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+spec:
+  selector:
+      matchLabels:
+        app: api-gateway
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+        - name: api-gateway
+          image: 571335938804.dkr.ecr.us-west-2.amazonaws.com/remi-api-gateway:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8090
+          env:
+            - name: JAVA_OPTS
+              value: "-XX:MaxMetaspaceSize=128m -Xss1m -Xms128m -Xmx512m"
+            - name: ENV
+              value: "uat"
+            - name: CONFIG_SERVER
+              value: "http://centralized-configuration:8096/centralized-configuration"

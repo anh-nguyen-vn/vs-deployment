@@ -1,0 +1,33 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: video-sharing-fe
+spec:
+  selector:
+    app: video-sharing-fe
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: video-sharing-fe
+spec:
+  selector:
+      matchLabels:
+        app: video-sharing-fe
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: video-sharing-fe
+    spec:
+      containers:
+        - name: video-sharing-fe
+          image: 571335938804.dkr.ecr.us-west-2.amazonaws.com/remi-video-sharing-fe:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
